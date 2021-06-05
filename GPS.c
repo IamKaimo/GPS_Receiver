@@ -48,3 +48,11 @@ char gps_fetch(double* new_lat,double* new_lon,double* new_time){
         *new_time = atoi(temp3);
         return gps_fix;
 }
+void dec_to_dms(double dec,double* arr){
+    arr[1]= dec - (int)dec;
+    arr[0]= dec - arr[1];
+    arr[1] = arr[1] * 60;
+    arr[2] = arr[1] - (int)arr[1];
+    arr[1] = arr[1] - arr[2];
+    arr[2]= arr[2] * 60;
+}

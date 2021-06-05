@@ -10,6 +10,25 @@ double latitude,longitude,time=0;
 double data_log[100][3];
 
 
+void PortA_Init(void){
+  SYSCTL_RCGC2_R |= 0x01;                            // 1) activate clock for Port F
+  while((SYSCTL_PRGPIO_R & 0x01) == 0){};     // allow time for clock to start
+  GPIO_PORTA_CR_R = 0x0C;                                   // allow changes to PF4-0
+  GPIO_PORTA_AMSEL_R = 0x00;                                // 3) disable analog on PF
+  GPIO_PORTA_DIR_R = 0x0F;                                  // 5) PF4,PF0 in, PF3-1 out
+  GPIO_PORTA_DEN_R = 0x0C;                                  // 8) enable digital I/O on PF4-0
+}
+void PortB_Init(void){
+  SYSCTL_RCGC2_R |= 0x02;                            // 1) activate clock for Port F
+  while((SYSCTL_PRGPIO_R & 0x02) == 0){};     // allow time for clock to start
+  GPIO_PORTB_CR_R = 0xFF;                                   // allow changes to PF4-0
+  GPIO_PORTB_AMSEL_R = 0x00;                                // 3) disable analog on PF
+  GPIO_PORTB_PCTL_R = 0x00;                                 // 4) PCTL GPIO on PF4-0
+  GPIO_PORTB_DIR_R = 0xFF;                                  // 5) PF4,PF0 in, PF3-1 out
+  GPIO_PORTB_AFSEL_R = 0x00;                                // 6) disable alt funct on PF7-0
+  GPIO_PORTB_PUR_R = 0x00;                                  // 7) enable pull-up on PF0 and PF4
+  GPIO_PORTB_DEN_R = 0xFF;                                  // 8) enable digital I/O on PF4-0
+}
 void PortF_Init(void){
   SYSCTL_RCGC2_R |= 0x20;     						// 1) activate clock for Port F
   while((SYSCTL_PRGPIO_R & 0x20) == 0){}; 	// allow time for clock to start
@@ -21,10 +40,24 @@ void PortF_Init(void){
   GPIO_PORTF_AFSEL_R = 0x00;        						// 6) disable alt funct on PF7-0
   GPIO_PORTF_PUR_R = 0x11;          						// 7) enable pull-up on PF0 and PF4
   GPIO_PORTF_DEN_R = 0x1F;          						// 8) enable digital I/O on PF4-0
+  GPIO_PORTF_DATA_R &= ~0x02;
 }
-
+void UART0_Init(void){
+  SYSCTL_RCGC1_R |= 0x01;                // activate UART0
+  SYSCTL_RCGC2_R |= 0x01;                // activate port A
+  while((SYSCTL_PRGPIO_R & 0x01) == 0){};// allow time for clock to start
+  UART0_CTL_R &= ~0x01;                  // disable UART
+  UART0_IBRD_R = 104;                    // IBRD = int(16,000,000 / (16 * 9,600)) = int(104.1667)
+  UART0_FBRD_R = 11;                     // FBRD = int(0.1667 * 64 + 0.5) = 11
+  UART0_LCRH_R |=0x60;
+  UART0_CTL_R |= 0x301;                 // enable UART
+  GPIO_PORTA_AFSEL_R |= 0x03;           // enable alt funct on PA1-0
+  GPIO_PORTA_DEN_R |= 0x03;             // enable digital I/O on PA1-0
+  GPIO_PORTA_PCTL_R |= 0x11 ;           // configure PA1-1 as UART
+  GPIO_PORTA_AMSEL_R &= ~0x03;          // disable analog functionality on PA
+}
 void UART2_Init(void){
-  SYSCTL_RCGC1_R |= 0x04; 								// activate UART1
+  SYSCTL_RCGC1_R |= 0x04; 								// activate UART2
   SYSCTL_RCGC2_R |= 0x08; 							// activate port D
   while((SYSCTL_PRGPIO_R & 0x08) == 0){}; // allow time for clock to start
   UART2_CTL_R &= ~0x01;      							// disable UART
@@ -40,8 +73,20 @@ void UART2_Init(void){
 
 
 int main(void){
+    PortA_Init();
+    PortB_Init();
     PortF_Init();
+    UART0_Init();
     UART2_Init();
+    lcd_init();
+    Delay(1908960);    //wait 2 seconds
+    display_data("Initializing.");
+    Delay(1008960);    //wait 1 seconds
+    lcd_send_cmd(1);
+    display_data("Initializing..");
+    Delay(1008960);    //wait 1 seconds
+    lcd_send_cmd(1);
+    display_data("Distance = 100m");
     while(1){ //program loop
         gps_fetch(&latitude,&longitude,&time);
         data_log[pointer][0] = latitude;
