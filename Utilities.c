@@ -64,6 +64,6 @@ void dec_to_dms(double dec,double* arr){
     arr[2]= arr[2] * 60;
 }
 void check_distance(double total_distance){
-    if(total_distance >= 100) Red_LED(1);
+    if(total_distance > 100) Red_LED(1);
     else    Red_LED(0);
 }

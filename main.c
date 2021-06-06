@@ -18,8 +18,12 @@ int i;
 int main(void){
     Initialize();
     lcd_send_cmd(1);
+
+    //dummy data
+    total_distance = 105;
+
     while(1){ //program loop
-        check_distance(total_distance); // Turn LED On if distance < 100
+        check_distance(total_distance); // Turn LED On if distance exceeds 100
         for(i=0;i<3;i++)dist[i]=' ';
         int_to_str(total_distance,dist);
         display_2d("Distance is:",dist);//  Display the two strings
