@@ -42,20 +42,17 @@ double calc_distance(double new_lat,double new_lon,double old_lat,double old_lon
     return d;
 }
 void int_to_str(int num,char* str){
-    int digits = 0,fake = num,i;
-    double fake2 = num;
+    int digits = 0,copy=num,i = 0;
     if(num ==0)digits = 1;
     else{
-        while(fake){
-            fake = fake/10;
+        while(copy){
+            copy = copy/10;
             digits++;
         }
     }
-    fake2= fake2/pow(10,digits);
-    for(i=0;i<digits;i++){
-        fake2 = fake2*10;
-        str[i] = (int)fake2 + 48;
-        fake2 = fake2 - (int)fake2;
+    for(i = digits-1;i>=0;i--){
+        str[i] = (num%10) + 48;
+        num /= 10;
     }
 }
 void dec_to_dms(double dec,double* arr){
