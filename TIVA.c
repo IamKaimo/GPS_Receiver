@@ -14,11 +14,32 @@ void PortB_Init(void){
   GPIO_PORTB_CR_R = 0xFF;                                   // allow changes to PF4-0
   GPIO_PORTB_AMSEL_R = 0x00;                                // 3) disable analog on PF
   GPIO_PORTB_PCTL_R = 0x00;                                 // 4) PCTL GPIO on PF4-0
-  GPIO_PORTB_DIR_R = 0xFF;                                  // 5) PF4,PF0 in, PF3-1 out
+  GPIO_PORTB_DIR_R |= 0xF0;                                  // 5) PF4,PF0 in, PF3-1 out
   GPIO_PORTB_AFSEL_R = 0x00;                                // 6) disable alt funct on PF7-0
-  GPIO_PORTB_PUR_R = 0x00;                                  // 7) enable pull-up on PF0 and PF4
+  GPIO_PORTB_PDR_R |= 0x0F;                                  // 7) enable pull-up on PF0 and PF4
   GPIO_PORTB_DEN_R = 0xFF;                                  // 8) enable digital I/O on PF4-0
+
+  GPIO_PORTB_IS_R &= ~0x0F; // PF4 is edge-sensitive
+  GPIO_PORTB_IBE_R &= ~0x0F; // PF4 is not both edges
+  GPIO_PORTB_IEV_R |= 0x0F; // PF4 falling edge event
+  GPIO_PORTB_ICR_R = 0x0F; // clear flag4
+  GPIO_PORTB_IM_R &= ~0x0F; // arm interrupt on PF4
+  NVIC_PRI0_R = (NVIC_PRI0_R&0xFFFF1FFF)|0x00006000; // (g) priority 5
+  NVIC_EN0_R = 0x00000002; // (h) enable interrupt 30 in NVIC
 }
+
+void PortE_Init(void){
+  SYSCTL_RCGC2_R |= 0x10;                            // 1) activate clock for Port F
+  while((SYSCTL_PRGPIO_R & 0x10) == 0){};     // allow time for clock to start
+  GPIO_PORTE_CR_R = 0x0E;                                   // allow changes to PF4-0
+  GPIO_PORTE_AMSEL_R = 0x00;                                // 3) disable analog on PF
+  GPIO_PORTE_PCTL_R = 0x00;                                 // 4) PCTL GPIO on PF4-0
+  GPIO_PORTE_DIR_R = 0x0E;                                  // 5) PF4,PF0 in, PF3-1 out
+  GPIO_PORTE_AFSEL_R = 0x00;                                // 6) disable alt funct on PF7-0
+  GPIO_PORTE_DEN_R |= 0x0E;                                  // 8) enable digital I/O on PF4-0
+  GPIO_PORTE_DATA_R |= 0x0E;                                  // 8) enable digital I/O on PF4-0
+}
+
 void PortF_Init(void){
   SYSCTL_RCGC2_R |= 0x20;                           // 1) activate clock for Port F
   while((SYSCTL_PRGPIO_R & 0x20) == 0){};   // allow time for clock to start
@@ -30,7 +51,6 @@ void PortF_Init(void){
   GPIO_PORTF_AFSEL_R = 0x00;                                // 6) disable alt funct on PF7-0
   GPIO_PORTF_PUR_R = 0x11;                                  // 7) enable pull-up on PF0 and PF4
   GPIO_PORTF_DEN_R = 0x1F;                                  // 8) enable digital I/O on PF4-0
-  GPIO_PORTF_DATA_R &= ~0x0E;
 }
 void UART0_Init(void){
   SYSCTL_RCGC1_R |= 0x01;                // activate UART0

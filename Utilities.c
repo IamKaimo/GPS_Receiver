@@ -2,6 +2,7 @@
 #include    "TIVA.h"
 #include    "LCD.h"
 #include    "math.h"
+#include "SYSTICK.h"
 #define PI 3.14159265
 
 
@@ -17,10 +18,12 @@ void display_2d(char* data1,char* data2){
 void Initialize(void){
     PortA_Init();
     PortB_Init();
+    PortE_Init();
     PortF_Init();
     UART0_Init();
     UART2_Init();
     lcd_init();
+    SysTick_Init();
     display_2d("Please Wait","Initializing.");
     Delay(1008960);    //wait 1 seconds
     lcd_set_cursor(0,0);
@@ -63,7 +66,7 @@ void dec_to_dms(double dec,double* arr){
     arr[1] = arr[1] - arr[2];
     arr[2]= arr[2] * 60;
 }
-void check_distance(double total_distance){
-    if(total_distance > 100) Red_LED(1);
+void check_distance(double total_distance,int target_distance){
+    if(total_distance >= target_distance) Red_LED(1);
     else    Red_LED(0);
 }
