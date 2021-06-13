@@ -1,0 +1,1 @@
+"./GPS.obj" "./KEYPAD.obj" "./LCD.obj" "./SYSTICK.obj" "./TIVA.obj" "./Utilities.obj" "./main.obj" "./tm4c123gh6pm_startup_ccs.obj" "../tm4c123gh6pm.cmd" -llibc.a 
