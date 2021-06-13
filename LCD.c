@@ -7,27 +7,39 @@
 
 void lcd_send_cmd(char cmd){
     configure &= ~(1<<RS);     //RS=0 for sending command
+    data_sent = (cmd & 0xF0) | (data_sent & 0x0F); // MS 4 bits
     configure |= 1 << EN;  //setting EN to high
-    data_sent = cmd;
-    Delay(4000);
+    Delay(3000);
+    configure &= ~(1<<EN); //setting EN to low
+    Delay(3000);
+    data_sent = (cmd <<4) | (data_sent & 0x0F);
+    configure |= 1 << EN;  //setting EN to high
+    Delay(3000);
     configure &= ~(1<<EN); //setting EN to low
 }
 void lcd_init (void){
-    lcd_send_cmd(0x38); //DL=1(8 bit mode),N = 1(2 line display),F = 0 (5x8 characters)
-    Delay(10000);
+   // lcd_send_cmd(0x20); //DL=1(8 bit mode),N = 1(2 line display),F = 0 (5x8 characters)
+    //Delay(10000);
+    lcd_send_cmd(0x28);
+    Delay(3000);
     lcd_send_cmd(0x0F); //Display on
-    Delay(10000);
+    Delay(3000);
     lcd_send_cmd(0x01);  //Display clear
-    Delay(10000);
+    Delay(3000);
     lcd_send_cmd(0x06); //I/D=1,S=0
 }
 void display_data (char* data){
     char i = 0;
     while(data[i] != '\0'){
         configure |= 1<<RS;     //RS=1 for sending data
+                data_sent = (data[i] & 0xF0) | (data_sent & 0x0F);
+                configure |= 1 << EN;  //setting EN to high
+                Delay(3000);
+                configure &= ~(1<<EN); //setting EN to low
+                Delay(3000);
+        data_sent = (data[i] << 4) | (data_sent & 0x0F);
         configure |= 1 << EN;  //setting EN to high
-        data_sent = data[i];
-        Delay(4000);
+        Delay(3000);
         configure &= ~(1<<EN); //setting EN to low
         i++;
     }
